@@ -60,7 +60,7 @@ public class GeoLocator extends AppCompatActivity {
 
             marker = new Marker(osm);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            marker.setIcon(getResources().getDrawable(R.drawable.marker));
+            marker.setIcon(getResources().getDrawable(R.drawable.locmarker));
             osm.getOverlays().add(marker);
             GeoPoint GPStart = new GeoPoint(gps.getLatitude(), gps.getLongitude());
             marker.setPosition(GPStart);
@@ -91,21 +91,11 @@ public class GeoLocator extends AppCompatActivity {
                         }
                     });
                 }
-            }, 500, 3000);
+            }, 500, 1000);
 
         } else {
             gps.showSettingsAlert();
         }
-    }
-
-    public void moveToUserLocation() {
-        //удаляем объект
-        //gps = null;
-        //System.gc();
-        //инициализируем новый
-        //Без переинициализации работает не корректно. Необходимо разобраться.
-        //gps = new GPSTracker(GeoLocator.this);
-        //mc.setZoom(maxZoomLevel);
     }
 
     private void updateLocation() {
