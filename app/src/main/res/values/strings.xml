@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">GeoLocator</string>
+    <string name="action_sc">Show Coordinates</string>
+    <string name="action_mtu">Move view to user</string>
+    <string name="action_onm">Use online map</string>
+    <string name="action_ofm">Use offline map</string>
+    <string name="action_exit">Exit</string>
+</resources>
