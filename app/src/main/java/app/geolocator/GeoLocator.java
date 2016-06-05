@@ -6,14 +6,11 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
-import com.firebase.client.Firebase;
 import org.osmdroid.bonuspack.overlays.Marker;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,13 +18,11 @@ public class GeoLocator extends AppCompatActivity {
 
     private MapView osm;
     private MapController mc;
-    GPSTracker gps;
-    Marker marker;
-    Timer timer;
-    Firebase myFirebaseRef;
-    Firebase User1Ref;
-    Map<String, Double> User1Map;
+    private GPSTracker gps;
+    private Marker marker;
+    private Timer timer;
     int maxZoomLevel;
+    SendDataToFirebase dataToFirebase = new SendDataToFirebase();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -65,13 +60,6 @@ public class GeoLocator extends AppCompatActivity {
             GeoPoint GPStart = new GeoPoint(gps.getLatitude(), gps.getLongitude());
             marker.setPosition(GPStart);
             marker.setEnabled(false);
-
-            Firebase.setAndroidContext(this);
-            myFirebaseRef = new Firebase("https://locmanager.firebaseio.com/");
-            Firebase newPostRef = myFirebaseRef.push();
-            String Id = newPostRef.getKey();
-            User1Ref = myFirebaseRef.child(String.valueOf(Id));
-            User1Map = new HashMap<>();
 
             if (timer != null) {
                 timer.cancel();
@@ -111,8 +99,7 @@ public class GeoLocator extends AppCompatActivity {
         } else {
             GeoPoint GP = new GeoPoint(gps.getLatitude(), gps.getLongitude());
             changeMarkerPosition(GP);
-            SendDataToFirebase(gps.getLatitude(), gps.getLongitude());
-            //System.out.println("Location update: " + gps.getLatitude() + gps.getLongitude());
+            dataToFirebase.sendData(gps.getLatitude(), gps.getLongitude());
         }
     }
 
@@ -120,13 +107,6 @@ public class GeoLocator extends AppCompatActivity {
         marker.setEnabled(true);
         marker.setPosition(GP);
         osm.invalidate();
-        //moveToUserLocation();
-    }
-
-    public void SendDataToFirebase(double lati, double longi) {
-        User1Map.put("Latitude", lati);
-        User1Map.put("Longitude", longi);
-        User1Ref.setValue(User1Map);
     }
 
     @Override
@@ -182,9 +162,9 @@ public class GeoLocator extends AppCompatActivity {
     }
 
     public void quit() {
-        System.gc();
-        User1Ref.setValue(null);
         Toast.makeText(getApplicationContext(), "Wait for exit, please", Toast.LENGTH_SHORT).show();
+        dataToFirebase.deleteDataFromFirebase();
+        System.gc();
         int pid = android.os.Process.myPid();
         android.os.Process.killProcess(pid);
         System.exit(0);

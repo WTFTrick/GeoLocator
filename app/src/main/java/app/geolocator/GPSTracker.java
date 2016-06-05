@@ -11,11 +11,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.util.Log;
-import org.osmdroid.api.IMapController;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.OverlayItem;
 
 public class GPSTracker extends Service implements LocationListener{
 
