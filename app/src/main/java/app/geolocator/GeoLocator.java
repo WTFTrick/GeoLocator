@@ -18,7 +18,7 @@ public class GeoLocator extends AppCompatActivity {
 
     private MapView osm;
     private MapController mc;
-    private GPSTracker gps;
+    private GetLocation locmanager;
     private Marker marker;
     private Timer timer;
     int maxZoomLevel;
@@ -36,16 +36,18 @@ public class GeoLocator extends AppCompatActivity {
 
         osm = (MapView) findViewById(R.id.map);
 
-        gps = new GPSTracker(GeoLocator.this);
-        if (gps.canGetLocation()) {
+        locmanager = new GetLocation(GeoLocator.this);
+        if (locmanager.canGetLocation()) {
+
+
             osm.setUseDataConnection(true);
             osm.setTileSource(TileSourceFactory.MAPNIK);
             osm.getOverlays().clear();
             osm.setBuiltInZoomControls(true);
             osm.setMultiTouchControls(true);
 
-            double latitude = gps.getLatitude();
-            double longitude = gps.getLongitude();
+            double latitude = locmanager.getLatitude();
+            double longitude = locmanager.getLongitude();
             GeoPoint GP = new GeoPoint(latitude, longitude);
             mc = (MapController) osm.getController();
             mc.setZoom(17);
@@ -57,7 +59,7 @@ public class GeoLocator extends AppCompatActivity {
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
             marker.setIcon(getResources().getDrawable(R.drawable.locmarker));
             osm.getOverlays().add(marker);
-            GeoPoint GPStart = new GeoPoint(gps.getLatitude(), gps.getLongitude());
+            GeoPoint GPStart = new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude());
             marker.setPosition(GPStart);
             marker.setEnabled(false);
 
@@ -65,9 +67,10 @@ public class GeoLocator extends AppCompatActivity {
                 timer.cancel();
             }
 
-            mc.animateTo(new GeoPoint(gps.getLatitude(), gps.getLongitude()));
+            mc.animateTo(new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude()));
 
             timer = new Timer();
+
 
             timer.schedule(new TimerTask() {
 
@@ -81,25 +84,26 @@ public class GeoLocator extends AppCompatActivity {
                 }
             }, 500, 1000);
 
+
         } else {
-            gps.showSettingsAlert();
+            locmanager.showSettingsAlert();
         }
     }
 
     private void updateLocation() {
         //удаляем объект
-        gps = null;
+        locmanager = null;
         System.gc();
         //инициализируем новый
         //Без переинициализации работает не корректно. Необходимо разобраться.
-        gps = new GPSTracker(GeoLocator.this);
+        locmanager = new GetLocation(GeoLocator.this);
 
-        if (gps.getLatitude() == 0.0) {
+        if (locmanager.getLatitude() == 0.0) {
             System.out.println("0.0, 0.0");
         } else {
-            GeoPoint GP = new GeoPoint(gps.getLatitude(), gps.getLongitude());
+            GeoPoint GP = new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude());
             changeMarkerPosition(GP);
-            dataToFirebase.sendData(gps.getLatitude(), gps.getLongitude());
+            dataToFirebase.sendData(locmanager.getLatitude(), locmanager.getLongitude());
         }
     }
 
@@ -123,13 +127,13 @@ public class GeoLocator extends AppCompatActivity {
 
             case R.id.action_mtu:
                 mc.setZoom(maxZoomLevel);
-                mc.animateTo(new GeoPoint(gps.getLatitude(), gps.getLongitude()));
+                mc.animateTo(new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude()));
                 osm.invalidate();
                 return true;
 
             case R.id.action_sc:
-                Toast.makeText(getApplicationContext(), "Your coordinates:\n" + gps.getLatitude()
-                        + " , " + gps.getLongitude(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Your coordinates:\n" + locmanager.getLatitude()
+                        + " , " + locmanager.getLongitude(), Toast.LENGTH_LONG).show();
                 System.gc();
                 return true;
 
@@ -165,6 +169,11 @@ public class GeoLocator extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), "Wait for exit, please", Toast.LENGTH_SHORT).show();
         dataToFirebase.deleteDataFromFirebase();
         System.gc();
+        try {
+            Thread.sleep(800);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         int pid = android.os.Process.myPid();
         android.os.Process.killProcess(pid);
         System.exit(0);
