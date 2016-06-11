@@ -82,7 +82,7 @@ public class GeoLocator extends AppCompatActivity {
                         }
                     });
                 }
-            }, 500, 1000);
+            }, 1000, 4000);
 
 
         } else {
@@ -134,7 +134,6 @@ public class GeoLocator extends AppCompatActivity {
             case R.id.action_sc:
                 Toast.makeText(getApplicationContext(), "Your coordinates:\n" + locmanager.getLatitude()
                         + " , " + locmanager.getLongitude(), Toast.LENGTH_LONG).show();
-                System.gc();
                 return true;
 
             case R.id.action_onm:
