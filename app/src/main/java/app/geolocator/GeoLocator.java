@@ -100,7 +100,9 @@ public class GeoLocator extends AppCompatActivity {
 
         if (locmanager.getLatitude() == 0.0) {
             System.out.println("0.0, 0.0");
-        } else {
+        }
+        else
+        {
             GeoPoint GP = new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude());
             changeMarkerPosition(GP);
             dataToFirebase.sendData(locmanager.getLatitude(), locmanager.getLongitude());
