@@ -38,8 +38,6 @@ public class GeoLocator extends AppCompatActivity {
 
         locmanager = new GetLocation(GeoLocator.this);
         if (locmanager.canGetLocation()) {
-
-
             osm.setUseDataConnection(true);
             osm.setTileSource(TileSourceFactory.MAPNIK);
             osm.getOverlays().clear();
