@@ -21,19 +21,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class GeoLocator extends AppCompatActivity {
-    /** MapView of main activity*/
+    /** A mapView of main activity */
     private MapView osm;
-    /** Tool for work with MapView*/
+    /** A tool for work with MapView */
     private MapController mc;
-    /** Object of class GetLocation, allowing work with user location*/
+    /** A jbject of class GetLocation, allowing work with user location */
     private GetLocation locmanager;
-    /** Marker drawing on the map*/
+    /** A marker drawing on the map */
     private Marker marker;
-    /** Timer*/
+    /** A timer*/
     private Timer timer;
-    /** Maximum zoom level of MapView*/
+    /** A maximum zoom level of MapView */
     int maxZoomLevel;
-    /** Object of class SendDataToFirebase, sending data Firebase*/
+    /** An object of class SendDataToFirebase, sending data Firebase */
     SendDataToFirebase dataToFirebase = new SendDataToFirebase();
 
     @Override
