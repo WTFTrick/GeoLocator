@@ -1,3 +1,9 @@
+/**
+ * Class of main activity
+ * @author NickKopylov
+ * @version 1.0
+ */
+
 package app.geolocator;
 
 import android.content.pm.ActivityInfo;
@@ -15,13 +21,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class GeoLocator extends AppCompatActivity {
-
+    /** MapView of main activity*/
     private MapView osm;
+    /** Tool for work with MapView*/
     private MapController mc;
+    /** Object of class GetLocation, allowing work with user location*/
     private GetLocation locmanager;
+    /** Marker drawing on the map*/
     private Marker marker;
+    /** Timer*/
     private Timer timer;
+    /** Maximum zoom level of MapView*/
     int maxZoomLevel;
+    /** Object of class SendDataToFirebase, sending data Firebase*/
     SendDataToFirebase dataToFirebase = new SendDataToFirebase();
 
     @Override
@@ -37,63 +49,58 @@ public class GeoLocator extends AppCompatActivity {
         osm = (MapView) findViewById(R.id.map);
 
         locmanager = new GetLocation(GeoLocator.this);
+
         if (locmanager.canGetLocation()) {
-            osm.setUseDataConnection(true);
-            osm.setTileSource(TileSourceFactory.MAPNIK);
-            osm.getOverlays().clear();
-            osm.setBuiltInZoomControls(true);
-            osm.setMultiTouchControls(true);
-
-            double latitude = locmanager.getLatitude();
-            double longitude = locmanager.getLongitude();
-            GeoPoint GP = new GeoPoint(latitude, longitude);
-            mc = (MapController) osm.getController();
-            mc.setZoom(17);
-            mc.setCenter(GP);
-            osm.setMinZoomLevel(3);
-            osm.setMaxZoomLevel(maxZoomLevel);
-
-            marker = new Marker(osm);
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            marker.setIcon(getResources().getDrawable(R.drawable.locmarker));
-            osm.getOverlays().add(marker);
-            GeoPoint GPStart = new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude());
-            marker.setPosition(GPStart);
-            marker.setEnabled(false);
-
-            if (timer != null) {
-                timer.cancel();
-            }
-
-            mc.animateTo(new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude()));
-
-            timer = new Timer();
-
-
-            timer.schedule(new TimerTask() {
-
-                @Override
-                public void run() {
-                    GeoLocator.this.runOnUiThread(new Runnable() {
-                        public void run() {
-                            updateLocation();
-                        }
-                    });
-                }
-            }, 1000, 4000);
-
-
+            Toast.makeText(getApplicationContext(), "GPS works", Toast.LENGTH_SHORT).show();
         } else {
             locmanager.showSettingsAlert();
         }
+
+        osm.setUseDataConnection(true);
+        osm.setTileSource(TileSourceFactory.MAPNIK);
+        osm.getOverlays().clear();
+        osm.setBuiltInZoomControls(true);
+        osm.setMultiTouchControls(true);
+
+        GeoPoint GP = new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude());
+        mc = (MapController) osm.getController();
+        mc.setZoom(17);
+        mc.setCenter(GP);
+        osm.setMinZoomLevel(3);
+        osm.setMaxZoomLevel(maxZoomLevel);
+
+        createMarker(GP);
+
+        if (timer != null) {
+            timer.cancel();
+        }
+
+        mc.animateTo(new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude()));
+
+        timer = new Timer();
+
+
+        timer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                GeoLocator.this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        updateLocation();
+                    }
+                });
+            }
+        }, 0, 1000);
+        osm.invalidate();
     }
 
+    /**
+     * A function, that searches for the new location of the user
+     */
     private void updateLocation() {
-        //удаляем объект
+        //try to delete object
         locmanager = null;
-        System.gc();
-        //инициализируем новый
-        //Без переинициализации работает не корректно. Необходимо разобраться.
+        //initialization new object.
         locmanager = new GetLocation(GeoLocator.this);
 
         if (locmanager.getLatitude() == 0.0) {
@@ -107,6 +114,25 @@ public class GeoLocator extends AppCompatActivity {
         }
     }
 
+    /**
+     * A function, that create marker
+     * @param StartGP Contain start latitude and longitude
+     */
+    public void createMarker(GeoPoint StartGP)
+    {
+        marker = new Marker(osm);
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        marker.setIcon(getResources().getDrawable(R.drawable.locmarker));
+        osm.getOverlays().add(marker);
+        marker.setPosition(StartGP);
+        marker.setEnabled(false);
+        osm.invalidate();
+    }
+
+    /**
+     * A function, that change marker position, when changed the location of the user
+     * @param GP Contain new latitude and longitude
+     */
     public void changeMarkerPosition(GeoPoint GP) {
         marker.setEnabled(true);
         marker.setPosition(GP);
@@ -164,6 +190,9 @@ public class GeoLocator extends AppCompatActivity {
 
     }
 
+    /**
+     * A quit function
+     */
     public void quit() {
         Toast.makeText(getApplicationContext(), "Wait for exit, please", Toast.LENGTH_SHORT).show();
         dataToFirebase.deleteDataFromFirebase();

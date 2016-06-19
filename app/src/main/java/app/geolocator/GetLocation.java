@@ -1,3 +1,9 @@
+/**
+ * Class for determining user location
+ * @author NickKopylov
+ * @version 1.0
+ */
+
 package app.geolocator;
 
 import android.Manifest;
@@ -19,18 +25,25 @@ public class GetLocation extends Service implements LocationListener {
 
 	private final Context context;
 
+	/** A boolean var for checking GPS */
 	boolean isGPSEnabled = false;
+	/** A boolean var for checking Network */
 	boolean isNetworkEnabled = false;
+	/** A boolean var, that can get location */
 	boolean canGetLocation = false;
 
+	/** A Location var*/
 	Location location;
 
 	double latitude;
 	double longitude;
 
+	/** A var, that contain value of minimum distance for updates */
 	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
+	/** A var, that contain value of minimum time between updates */
 	private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
 
+	/** A LocationManager var */
 	protected LocationManager locationManager;
 
 	public GetLocation(Context context) {
@@ -147,6 +160,8 @@ public class GetLocation extends Service implements LocationListener {
 			public void onClick(DialogInterface dialog, int which) {
 				Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 				context.startActivity(intent);
+				int pid = android.os.Process.myPid();
+				android.os.Process.killProcess(pid);
 				System.exit(0);
 			}
 		});

@@ -1,3 +1,9 @@
+/**
+ * Class FirebaseApplication for setting Android Context
+ * @author NickKopylov
+ * @version 1.0
+ */
+
 package app.geolocator;
 
 import com.firebase.client.Firebase;

@@ -1,18 +1,23 @@
+/**
+ * Class, sending data to Firebase
+ * @author NickKopylov
+ * @version 1.0
+ */
+
 package app.geolocator;
 
-import com.firebase.client.AuthData;
-import com.firebase.client.ChildEventListener;
-import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-
 import java.util.HashMap;
 import java.util.Map;
 
 public class SendDataToFirebase extends android.app.Application {
+    /** Object of class Firebase firebaseRef*/
     private Firebase firebaseRef;
+    /** Contaitner with pair key, value*/
     private Map<String, Double> userMap = new HashMap<>();
+    /** Object of class Firebase newPostRef*/
     private Firebase newPostRef;
+    /** Object of class Firebase userRef*/
     private Firebase userRef;
 
     public SendDataToFirebase() {
@@ -27,6 +32,10 @@ public class SendDataToFirebase extends android.app.Application {
         userRef.setValue(null);
     }
 
+    /**
+     * @param latitude Value of latitude
+     * @param longitude Value of longitude
+     * */
     public void sendData(double latitude, double longitude) {
         userMap.put("Latitude", latitude);
         userMap.put("Longitude", longitude);
