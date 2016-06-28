@@ -20,12 +20,11 @@ public class SendDataToFirebase extends android.app.Application {
     /** Object of class Firebase userRef*/
     private Firebase userRef;
 
-    public SendDataToFirebase() {
+    public SendDataToFirebase(String key) {
         firebaseRef = new Firebase("https://locmanager.firebaseio.com/");
-
         newPostRef = firebaseRef.push();
-        String Id = newPostRef.getKey();
-        userRef = firebaseRef.child(String.valueOf(Id));
+        //String Id = newPostRef.getKey();
+        userRef = firebaseRef.child(String.valueOf(key));
     }
 
     public void deleteDataFromFirebase() {

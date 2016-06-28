@@ -21,7 +21,7 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 
-public class GetLocation extends Service implements LocationListener {
+public class GetDeviceLocation extends Service implements LocationListener {
 
 	private final Context context;
 
@@ -46,7 +46,7 @@ public class GetLocation extends Service implements LocationListener {
 	/** A LocationManager var */
 	protected LocationManager locationManager;
 
-	public GetLocation(Context context) {
+	public GetDeviceLocation(Context context) {
 		this.context = context;
 		getLocation();
 	}
@@ -124,7 +124,7 @@ public class GetLocation extends Service implements LocationListener {
 				// for ActivityCompat#requestPermissions for more details.
 				return;
 			}
-			locationManager.removeUpdates(GetLocation.this);
+			locationManager.removeUpdates(GetDeviceLocation.this);
 		}
 	}
 	

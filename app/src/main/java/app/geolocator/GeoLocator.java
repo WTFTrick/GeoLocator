@@ -6,6 +6,7 @@
 
 package app.geolocator;
 
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +18,8 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
+
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -25,8 +28,8 @@ public class GeoLocator extends AppCompatActivity {
     private MapView osm;
     /** A tool for work with MapView */
     private MapController mc;
-    /** A jbject of class GetLocation, allowing work with user location */
-    private GetLocation locmanager;
+    /** A object of class GetLocation, allowing work with user location */
+    private GetDeviceLocation locmanager;
     /** A marker drawing on the map */
     private Marker marker;
     /** A timer*/
@@ -34,7 +37,9 @@ public class GeoLocator extends AppCompatActivity {
     /** A maximum zoom level of MapView */
     int maxZoomLevel;
     /** An object of class SendDataToFirebase, sending data Firebase */
-    SendDataToFirebase dataToFirebase = new SendDataToFirebase();
+    SendDataToFirebase dataToFirebase;
+    /** A var, contain device id for Firebase*/
+    String deviceID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -48,7 +53,7 @@ public class GeoLocator extends AppCompatActivity {
 
         osm = (MapView) findViewById(R.id.map);
 
-        locmanager = new GetLocation(GeoLocator.this);
+        locmanager = new GetDeviceLocation(GeoLocator.this);
 
         if (locmanager.canGetLocation()) {
             Toast.makeText(getApplicationContext(), "GPS works", Toast.LENGTH_SHORT).show();
@@ -71,14 +76,16 @@ public class GeoLocator extends AppCompatActivity {
 
         createMarker(GP);
 
+        mc.animateTo(new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude()));
+
+        deviceID = generateString();
+        dataToFirebase = new SendDataToFirebase(deviceID);
+
         if (timer != null) {
             timer.cancel();
         }
 
-        mc.animateTo(new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude()));
-
         timer = new Timer();
-
 
         timer.schedule(new TimerTask() {
 
@@ -91,8 +98,28 @@ public class GeoLocator extends AppCompatActivity {
                 });
             }
         }, 0, 1000);
+
+        startService(new Intent(this, GeoService.class).putExtra("deviceID", deviceID));
+
         osm.invalidate();
     }
+
+    /**
+     * A function, that generete device id for Firebase
+     */
+    private static String generateString()
+    {
+        int length = 10;
+        Random rng = new Random();
+        String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        char[] text = new char[length];
+        for (int i = 0; i < length; i++)
+        {
+            text[i] = characters.charAt(rng.nextInt(characters.length()));
+        }
+        return new String(text);
+    }
+
 
     /**
      * A function, that searches for the new location of the user
@@ -101,15 +128,14 @@ public class GeoLocator extends AppCompatActivity {
         //try to delete object
         locmanager = null;
         //initialization new object.
-        locmanager = new GetLocation(GeoLocator.this);
+        locmanager = new GetDeviceLocation(GeoLocator.this);
 
         if (locmanager.getLatitude() == 0.0) {
             System.out.println("0.0, 0.0");
         }
         else
         {
-            GeoPoint GP = new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude());
-            changeMarkerPosition(GP);
+            changeMarkerPosition(new GeoPoint(locmanager.getLatitude(), locmanager.getLongitude()));
             dataToFirebase.sendData(locmanager.getLatitude(), locmanager.getLongitude());
         }
     }
@@ -118,7 +144,7 @@ public class GeoLocator extends AppCompatActivity {
      * A function, that create marker
      * @param StartGP Contain start latitude and longitude
      */
-    public void createMarker(GeoPoint StartGP)
+    private void createMarker(GeoPoint StartGP)
     {
         marker = new Marker(osm);
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -133,7 +159,7 @@ public class GeoLocator extends AppCompatActivity {
      * A function, that change marker position, when changed the location of the user
      * @param GP Contain new latitude and longitude
      */
-    public void changeMarkerPosition(GeoPoint GP) {
+    private void changeMarkerPosition(GeoPoint GP) {
         marker.setEnabled(true);
         marker.setPosition(GP);
         osm.invalidate();
@@ -193,7 +219,9 @@ public class GeoLocator extends AppCompatActivity {
     /**
      * A quit function
      */
-    public void quit() {
+    private void quit() {
+        stopService(
+                new Intent(GeoLocator.this, GeoService.class));
         Toast.makeText(getApplicationContext(), "Wait for exit, please", Toast.LENGTH_SHORT).show();
         dataToFirebase.deleteDataFromFirebase();
         System.gc();
